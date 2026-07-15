@@ -8,13 +8,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Oswald:wght@500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=10">
+  <link rel="stylesheet" href="styles.css?v=11">
+  <link rel="stylesheet" href="community.css?v=1">
 </head>
 <body>
   <div class="projector" aria-hidden="true"></div>
   <header class="topbar">
     <a class="brand" href="#top" aria-label="В начало">VERBTW FILMS</a>
-    <div class="topbar__count"><span id="totalTop">0</span> записей в архиве</div>
+    <div class="topbar-actions">
+      <div class="topbar__count"><span id="totalTop">0</span> записей в архиве</div>
+      <button class="auth-open" data-auth-open type="button">Войти</button>
+      <div class="user-menu" data-user-menu hidden><span class="user-name" data-user-name></span><button class="logout-button" data-logout type="button">Выйти</button></div>
+    </div>
   </header>
 
   <main id="top">
@@ -62,7 +67,7 @@
         </label>
         <label class="sort">Сортировка
           <select id="sort">
-            <option value="original">как в списке</option>
+            <option value="community">по рейтингу зрителей</option>
             <option value="az">по алфавиту</option>
             <option value="rating">по моей оценке</option>
           </select>
@@ -106,7 +111,9 @@
   </dialog>
 
   <footer><span>VERBTW FILMS</span><span>Продолжение следует ···</span></footer>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="community.js?v=1"></script>
   <script src="data.js?v=10"></script>
-  <script src="app.js?v=11"></script>
+  <script src="app.js?v=12"></script>
 </body>
 </html>

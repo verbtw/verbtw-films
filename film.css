@@ -6,7 +6,7 @@ body{margin:0;min-height:100vh;background:var(--night);color:var(--white);font-f
 .film-header{height:76px;padding:0 5vw;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;border-bottom:1px solid var(--line);background:rgba(3,16,27,.2);backdrop-filter:blur(16px);font:10px Roboto Mono;text-transform:uppercase}
 .film-header a{color:inherit;text-decoration:none}
 .film-header .logo{font:600 25px Oswald;letter-spacing:.12em}
-.film-header>span{text-align:right;color:var(--muted)}
+.film-header-actions{justify-content:flex-end}.film-header-actions>span{text-align:right;color:var(--muted)}
 .back{color:var(--muted)!important}
 .back:hover{color:var(--blue)!important}
 .film-page{width:min(1420px,90vw);min-height:calc(100vh - 76px);margin:auto;padding:65px 0;display:grid;grid-template-columns:minmax(300px,430px) minmax(0,1fr);gap:clamp(55px,8vw,130px);align-items:center}

@@ -1,5 +1,9 @@
 .DS_Store
 .vercel
+.env.local
+.env.*.local
+supabase/.temp/
 __pycache__/
 codebase-memory-mcp/
 codebase-memory-mcp-install/
+.env*

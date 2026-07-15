@@ -2,6 +2,7 @@ const ratings = JSON.parse(localStorage.getItem('slava-ratings') || '{}');
 const metadataCacheKey = 'slava-metadata-v5';
 const metadata = JSON.parse(localStorage.getItem(metadataCacheKey) || '{}');
 const imdbCache = JSON.parse(localStorage.getItem('verbtw-imdb-v1') || '{}');
+let communityRatings = {};
 const wikiTitleOverrides = {'Чернобыль':'Чернобыль (мини-сериал)','Артур, ты король':'Артур, ты король'};
 let activeFilter = 'all';
 let selectedTitle = null;
@@ -57,12 +58,13 @@ function render(){
     return typeOk&&(genreSelect.value==='all'||item.genre===genreSelect.value)&&(directorSelect.value==='all'||item.director===directorSelect.value)&&item.title.toLocaleLowerCase('ru').includes(term);
   });
   if(sort.value==='az')list.sort((a,b)=>a.title.localeCompare(b.title,'ru'));
+  if(sort.value==='community')list.sort((a,b)=>(communityRatings[b.title]?.average||0)-(communityRatings[a.title]?.average||0)||(communityRatings[b.title]?.count||0)-(communityRatings[a.title]?.count||0)||a.index-b.index);
   if(sort.value==='rating')list.sort((a,b)=>(ratings[b.title]||0)-(ratings[a.title]||0)||a.index-b.index);
   grid.innerHTML=list.map(item=>{
     const meta=metadata[item.title]; const poster=meta?.poster;
     return `<a class="film-card" data-index="${item.index}" href="film.html?id=${item.index}" style="--card-hue:${hue(item.title)}" aria-label="Открыть страницу фильма: ${escapeHtml(item.title)}">
       <div class="poster-wrap">${poster?`<img src="${escapeHtml(poster)}" alt="Обложка — ${escapeHtml(item.title)}" loading="lazy">`:`<div class="poster-placeholder"><b>${escapeHtml(item.title.slice(0,1))}</b><span>Загрузка обложки</span></div>`}<div class="poster-shade"></div><span class="card-number">${String(item.index+1).padStart(3,'0')}</span><span class="imdb-badge" aria-label="Оценка IMDb"><b>IMDb</b><span data-imdb>${imdbCache[item.title]?.rating||'—'}</span></span></div>
-      <div class="card-body"><div class="film-card__meta"><span>${item.genre}</span><span>${item.type==='series'?'Сериал':'Фильм'}</span></div><h3>${escapeHtml(item.title)}</h3><div class="card-director">${escapeHtml(item.director)}</div><div class="card-footer"><span>Открыть страницу</span><span class="card-arrow">↗</span></div></div>
+      <div class="card-body"><div class="film-card__meta"><span>${item.genre}</span><span>${item.type==='series'?'Сериал':'Фильм'}</span></div><h3>${escapeHtml(item.title)}</h3><div class="card-director">${escapeHtml(item.director)}</div><div class="community-score"><b>VERBTW</b><span>${communityRatings[item.title]?.average?.toFixed(1)||'—'}</span><small>${communityRatings[item.title]?.count?`${communityRatings[item.title].count} оценок`:'нет оценок'}</small></div><div class="card-footer"><span>Открыть страницу</span><span class="card-arrow">↗</span></div></div>
     </a>`;
   }).join('');
   $('#resultText').textContent=`Показано ${list.length} из ${normalized.length}`;
@@ -139,5 +141,13 @@ $('.dialog-close').addEventListener('click',()=>ratingDialog.close());$('.detail
 ratingDialog.addEventListener('click',e=>{if(e.target===ratingDialog)ratingDialog.close();});detailsDialog.addEventListener('click',e=>{if(e.target===detailsDialog)detailsDialog.close();});
 search.addEventListener('input',render);sort.addEventListener('change',render);contentTypeSelect.addEventListener('change',render);genreSelect.addEventListener('change',render);directorSelect.addEventListener('change',render);
 document.querySelectorAll('[data-hero-filter]').forEach(button=>button.addEventListener('click',()=>{activeFilter=button.dataset.heroFilter;document.querySelector('.filter.active')?.classList.remove('active');document.querySelector(`[data-filter="${activeFilter}"]`)?.classList.add('active');render();document.querySelector('#collection').scrollIntoView({behavior:'smooth'});}));
-$('#reset').addEventListener('click',()=>{search.value='';sort.value='original';contentTypeSelect.value='all';genreSelect.value='all';directorSelect.value='all';activeFilter='all';render();});
+$('#reset').addEventListener('click',()=>{search.value='';sort.value='community';contentTypeSelect.value='all';genreSelect.value='all';directorSelect.value='all';activeFilter='all';render();});
 refreshSelects();updateStats();render();
+window.addEventListener('community:ratings',event=>{communityRatings=event.detail.summaries||{};render();});
+async function syncPersonalRatings(api,user){
+  if(!user){updateStats();render();return;}
+  const legacyRatings={...ratings};let cloudRatings=await api.myRatings();const migrationKey=`verbtw-ratings-migrated:${user.id}`;
+  if(!Object.keys(cloudRatings).length&&Object.keys(legacyRatings).length&&!localStorage.getItem(migrationKey)){await api.saveRatings(legacyRatings);cloudRatings=legacyRatings;localStorage.setItem(migrationKey,'1');}
+  Object.keys(ratings).forEach(title=>delete ratings[title]);Object.assign(ratings,cloudRatings);localStorage.setItem('slava-ratings',JSON.stringify(ratings));updateStats();render();
+}
+window.communityReady?.then(async api=>{if(!api.available)return;communityRatings=await api.loadSummaries();api.onAuth(user=>syncPersonalRatings(api,user).catch(()=>{}));await syncPersonalRatings(api,api.user);render();}).catch(()=>{});

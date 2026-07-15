@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import os
 import re
 import subprocess
 import sys
@@ -12,6 +13,10 @@ TRAILER_CACHE = {}
 class FilmsHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
+        if parsed.path == '/api/config':
+            url = os.environ.get('SUPABASE_URL') or os.environ.get('NEXT_PUBLIC_SUPABASE_URL') or ''
+            anon_key = os.environ.get('SUPABASE_ANON_KEY') or os.environ.get('SUPABASE_PUBLISHABLE_KEY') or os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY') or os.environ.get('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY') or ''
+            return self.send_json({'supabaseUrl': url, 'supabaseAnonKey': anon_key, 'configured': bool(url and anon_key)})
         if parsed.path != '/api/trailer':
             return super().do_GET()
         title = urllib.parse.parse_qs(parsed.query).get('title', [''])[0].strip()[:180]

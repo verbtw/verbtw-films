@@ -7,14 +7,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Oswald:wght@500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="film.css?v=2">
+  <link rel="stylesheet" href="film.css?v=3">
+  <link rel="stylesheet" href="community.css?v=1">
 </head>
 <body>
   <div id="pageBackdrop" class="page-backdrop"></div>
   <header class="film-header">
     <a class="back" href="index.html#collection">← Назад к коллекции</a>
     <a class="logo" href="index.html">VERBTW FILMS</a>
-    <span id="archiveNumber">000 / 312</span>
+    <div class="film-header-actions"><span id="archiveNumber">000 / 312</span><button class="auth-open" data-auth-open type="button">Войти</button><div class="user-menu" data-user-menu hidden><span class="user-name" data-user-name></span><button class="logout-button" data-logout type="button">Выйти</button></div></div>
   </header>
   <main class="film-page">
     <section class="poster-column">
@@ -36,13 +37,18 @@
         </div>
       </div>
       <div class="rating-section">
+        <span>Оценки зрителей</span>
+        <div class="community-summary"><strong id="communityAverage">—</strong><span>VERBTW RATING<br><small id="communityCount">Пока нет оценок</small></span></div>
         <span>Моя оценка</span>
         <div id="ratingButtons" class="rating-buttons"></div>
+        <p id="ratingHelp" class="rating-help">Войди в аккаунт, чтобы оценка сохранилась на всех устройствах.</p>
         <button id="removeRating" class="remove-rating">Удалить оценку</button>
       </div>
     </section>
   </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="community.js?v=1"></script>
   <script src="data.js?v=10"></script>
-  <script src="film.js?v=5"></script>
+  <script src="film.js?v=6"></script>
 </body>
 </html>

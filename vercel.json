@@ -6,6 +6,9 @@
     },
     "api/imdb.py": {
       "maxDuration": 30
+    },
+    "api/config.py": {
+      "maxDuration": 10
     }
   }
 }

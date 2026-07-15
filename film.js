@@ -7,6 +7,7 @@ const metadata=JSON.parse(localStorage.getItem(metadataCacheKey)||'{}');
 const wikiTitleOverrides={'Чернобыль':'Чернобыль (мини-сериал)','Артур, ты король':'Артур, ты король'};
 const trailerTitleOverrides={'Чернобыль':'Чернобыль HBO 2019','Артур, ты король':'Arthur the King 2024 Mark Wahlberg'};
 const ratings=JSON.parse(localStorage.getItem('slava-ratings')||'{}');
+let ratingApi=null;
 const cached=metadata[title]||{};
 const $=selector=>document.querySelector(selector);
 const genreRules=[['Фантастика',/матриц|интерстеллар|начало|довод|аватар|чуж|терминатор|бегущий|планет.*обезьян|я робот|веном|человек-паук|мир юрского|война миров|исходный код/i],['Криминал',/крестн|казино|славные парни|лицо со шрамом|донни браско|гангстер|криминальное|джон уик|карты деньги|джентельмен|борн|уравнитель|перевозчик|форсаж/i],['Военный',/ярость|дюнкерк|гладиатор|троя|последний самурай|бесславные|морпехи/i],['Ужасы',/пила|мученицы|паранормальное|челюсти|1408|маяк|молчание ягнят/i],['Спорт',/рокки|крид|боец|левша|воин|тренер картер|гонка|f1/i],['Комедия',/мальчишник|такси|третий лишний|полтора шпиона|одноклассники|стажер/i],['Романтика',/500 дней|10 причин|дневник памяти|ла-ла ленд|до встречи|звезда родилась|джо блэк/i],['Фэнтези',/гарри поттер|пираты карибского/i],['Триллер',/семь$|зодиак|пленницы|остров проклятых|бойцовский|моменто|донни дарко|эффект бабочки/i]];
@@ -15,7 +16,19 @@ document.title=`${title} — VERBTW FILMS`;$('#filmTitle').textContent=title;$('
 function setPoster(url){if(!url)return;$('#poster').innerHTML=`<img src="${url}" alt="Обложка — ${title}">`;$('#pageBackdrop').style.backgroundImage=`linear-gradient(90deg,rgba(3,15,25,.98),rgba(3,18,29,.76),rgba(3,18,29,.42)),url("${url}")`;}
 if(cached.poster)setPoster(cached.poster);if(cached.description)$('#description').textContent=cached.description;
 function renderRating(){const current=ratings[title];$('#ratingButtons').innerHTML=Array.from({length:10},(_,i)=>`<button data-rating="${i+1}" class="${current===i+1?'selected':''}">${i+1}</button>`).join('');$('#removeRating').hidden=!current;}
-$('#ratingButtons').addEventListener('click',e=>{if(!e.target.dataset.rating)return;ratings[title]=Number(e.target.dataset.rating);localStorage.setItem('slava-ratings',JSON.stringify(ratings));renderRating();});$('#removeRating').addEventListener('click',()=>{delete ratings[title];localStorage.setItem('slava-ratings',JSON.stringify(ratings));renderRating();});renderRating();
+function renderCommunitySummary(summary){$('#communityAverage').textContent=summary?.average?.toFixed(1)||'—';$('#communityCount').textContent=summary?.count?`${summary.count} оценок`:'Пока нет оценок';}
+async function syncAccountRating(user){
+  if(!ratingApi?.available)return;
+  if(!user){delete ratings[title];localStorage.setItem('slava-ratings',JSON.stringify(ratings));$('#ratingHelp').textContent='Войди в аккаунт, чтобы оценка сохранилась на всех устройствах.';renderRating();return;}
+  const pending=Number(sessionStorage.getItem(`pending-rating:${title}`));
+  if(pending){await ratingApi.saveRating(title,pending);sessionStorage.removeItem(`pending-rating:${title}`);ratings[title]=pending;}
+  else{const cloudRating=await ratingApi.myRating(title);if(cloudRating)ratings[title]=cloudRating;else delete ratings[title];}
+  localStorage.setItem('slava-ratings',JSON.stringify(ratings));$('#ratingHelp').textContent='Оценка сохранится в твоём аккаунте.';renderRating();
+}
+$('#ratingButtons').addEventListener('click',async e=>{if(!e.target.dataset.rating)return;const value=Number(e.target.dataset.rating);ratings[title]=value;localStorage.setItem('slava-ratings',JSON.stringify(ratings));renderRating();ratingApi=ratingApi||await window.communityReady;if(ratingApi?.user)await ratingApi.saveRating(title,value);else{sessionStorage.setItem(`pending-rating:${title}`,String(value));ratingApi?.openAuth('Войди или создай аккаунт, чтобы сохранить оценку.');}});
+$('#removeRating').addEventListener('click',async()=>{delete ratings[title];localStorage.setItem('slava-ratings',JSON.stringify(ratings));renderRating();ratingApi=ratingApi||await window.communityReady;if(ratingApi?.user)await ratingApi.removeRating(title);});renderRating();
+window.addEventListener('community:ratings',event=>renderCommunitySummary(event.detail.summaries?.[title]));
+window.communityReady?.then(async api=>{ratingApi=api;if(!api.available)return;const summaries=await api.loadSummaries();renderCommunitySummary(summaries[title]);api.onAuth(user=>syncAccountRating(user).catch(()=>{}));await syncAccountRating(api.user);}).catch(()=>{});
 const preview=$('#trailerPreview');let trailerId='';let trailerPromise;let stopTimer;
 function prepareTrailer(){if(!trailerPromise)trailerPromise=fetch(`/api/trailer?title=${encodeURIComponent(trailerTitleOverrides[title]||title)}`).then(r=>{if(!r.ok)throw new Error();return r.json();}).then(result=>trailerId=result.videoId||'');return trailerPromise;}
 async function startTrailer(){clearTimeout(stopTimer);if(preview.querySelector('iframe'))return;preview.classList.add('loading');try{await prepareTrailer();if(!trailerId)throw new Error();const frame=document.createElement('iframe');frame.src=`https://www.youtube-nocookie.com/embed/${trailerId}?autoplay=1&mute=1&controls=1&rel=0&playsinline=1`;frame.title=`Трейлер — ${title}`;frame.allow='autoplay; encrypted-media; picture-in-picture';frame.allowFullscreen=true;preview.append(frame);preview.classList.remove('loading');}catch(error){$('#trailerStatus').textContent='Трейлер не найден';preview.classList.add('loading');}}
