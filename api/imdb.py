@@ -6,6 +6,7 @@ from http.server import BaseHTTPRequestHandler
 
 IMDB_ID_OVERRIDES = {
     'Артур, ты король': 'tt10720352',
+    'Общак': 'tt1600196',
 }
 
 
