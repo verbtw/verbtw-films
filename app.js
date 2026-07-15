@@ -4,7 +4,12 @@ const metadata = JSON.parse(localStorage.getItem(metadataCacheKey) || '{}');
 const imdbCache = JSON.parse(localStorage.getItem('verbtw-imdb-v1') || '{}');
 const imdbRequests = new Map();
 let communityRatings = {};
-const wikiTitleOverrides = {'Чернобыль':'Чернобыль (мини-сериал)','Артур, ты король':'Артур, ты король','Общак':'Общак (фильм)'};
+const wikiTitleOverrides = {'Чернобыль':'Чернобыль (мини-сериал)','Артур, ты король':'Артур, ты король','Общак':'Общак (фильм)','Авиатор':'Авиатор (фильм, 2004)'};
+const imdbIdOverrides = {'Авиатор':'tt0338751'};
+Object.entries(wikiTitleOverrides).forEach(([title,sourceTitle])=>{if(metadata[title]&&metadata[title].sourceTitle!==sourceTitle)delete metadata[title];});
+Object.entries(imdbIdOverrides).forEach(([title,imdbId])=>{if(imdbCache[title]&&imdbCache[title].imdbId!==imdbId)delete imdbCache[title];});
+localStorage.setItem(metadataCacheKey,JSON.stringify(metadata));
+localStorage.setItem('verbtw-imdb-v1',JSON.stringify(imdbCache));
 let activeFilter = 'all';
 let selectedTitle = null;
 const $ = selector => document.querySelector(selector);
@@ -98,7 +103,7 @@ async function fetchMetadata(item){
     if(!page)throw new Error('not found');
     let summary={};
     try{summary=await fetch(`https://ru.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(page.title.replaceAll(' ','_'))}`).then(r=>r.json());}catch(error){}
-    const result={poster:summary.originalimage?.source||summary.thumbnail?.source||page.thumbnail?.source||'',description:summary.extract||page.extract||'',director:item.director};
+    const result={poster:summary.originalimage?.source||summary.thumbnail?.source||page.thumbnail?.source||'',description:summary.extract||page.extract||'',director:item.director,sourceTitle:exactWikiTitle||page.title};
     const qid=page.pageprops?.wikibase_item;
     if(qid){
       const entity=await fetch(`https://www.wikidata.org/wiki/Special:EntityData/${qid}.json`).then(r=>r.json());
