@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>VERBTW FILMS — фильм</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Oswald:wght@500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="film.css?v=2">
+</head>
+<body>
+  <div id="pageBackdrop" class="page-backdrop"></div>
+  <header class="film-header">
+    <a class="back" href="index.html#collection">← Назад к коллекции</a>
+    <a class="logo" href="index.html">VERBTW FILMS</a>
+    <span id="archiveNumber">000 / 312</span>
+  </header>
+  <main class="film-page">
+    <section class="poster-column">
+      <div id="poster" class="detail-poster"><div class="poster-loading">Загрузка обложки…</div></div>
+    </section>
+    <section class="film-info">
+      <p id="kicker" class="kicker">КОЛЛЕКЦИЯ VERBTW</p>
+      <h1 id="filmTitle">Загрузка…</h1>
+      <div class="tags"><span id="filmType">Фильм</span><span id="filmGenre">Жанр</span><span id="filmDirector">Режиссёр</span></div>
+      <div class="description-block">
+        <span>Описание</span>
+        <p id="description">Загружаю описание фильма…</p>
+      </div>
+      <div class="trailer-section">
+        <span>Трейлер</span>
+        <div id="trailerPreview" class="trailer-preview" tabindex="0" role="button" aria-label="Наведи курсор, чтобы посмотреть трейлер">
+          <div id="trailerCover" class="trailer-cover"><i>▶</i><div><b>Наведи, чтобы посмотреть</b><small>Трейлер запустится без перехода с сайта</small></div></div>
+          <div id="trailerStatus" class="trailer-status">Ищу трейлер…</div>
+        </div>
+      </div>
+      <div class="rating-section">
+        <span>Моя оценка</span>
+        <div id="ratingButtons" class="rating-buttons"></div>
+        <button id="removeRating" class="remove-rating">Удалить оценку</button>
+      </div>
+    </section>
+  </main>
+  <script src="data.js?v=8"></script>
+  <script src="film.js?v=3"></script>
+</body>
+</html>

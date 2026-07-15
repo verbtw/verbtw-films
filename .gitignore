@@ -1,0 +1,5 @@
+.DS_Store
+.vercel
+__pycache__/
+codebase-memory-mcp/
+codebase-memory-mcp-install/

@@ -1,0 +1,6 @@
+.git
+.DS_Store
+__pycache__
+codebase-memory-mcp
+codebase-memory-mcp-install
+server.py

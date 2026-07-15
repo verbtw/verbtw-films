@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Личная коллекция просмотренных фильмов и сериалов Славы">
+  <title>VERBTW FILMS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Oswald:wght@500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=8">
+</head>
+<body>
+  <div class="projector" aria-hidden="true"></div>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="В начало">VERBTW FILMS</a>
+    <div class="topbar__count"><span id="totalTop">0</span> записей в архиве</div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero__kicker">VERBTW'S PERSONAL COLLECTION · 2026</div>
+      <h1>FILMS</h1>
+      <p class="hero__intro">Фильмы и сериалы, которые оставили свой кадр в памяти. Открывай карточку — внутри описание, режиссёр, оценка и трейлер.</p>
+      <div class="hero-actions">
+        <button class="hero-primary" data-hero-filter="all">Смотреть коллекцию <span>↓</span></button>
+      </div>
+      <div class="ticket" aria-label="Статистика коллекции">
+        <div><strong id="movieCount">0</strong><span>фильмов</span></div>
+        <div><strong id="seriesCount">0</strong><span>сериала</span></div>
+        <div><strong id="ratedCount">0</strong><span>оценено</span></div>
+      </div>
+    </section>
+
+    <section class="collection" id="collection">
+      <div class="collection__heading">
+        <div>
+          <p class="eyebrow">КАТАЛОГ</p>
+          <h2>Просмотренное</h2>
+        </div>
+        <p id="resultText" class="result-text"></p>
+      </div>
+
+      <div class="controls">
+        <label class="search">
+          <span class="sr-only">Найти фильм или сериал</span>
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m21 21-4.35-4.35m2.35-5.65a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"/></svg>
+          <input id="search" type="search" placeholder="Найти в архиве…" autocomplete="off">
+        </label>
+        <label class="sort">Жанр
+          <select id="genre"><option value="all">все жанры</option></select>
+        </label>
+        <label class="sort">Режиссёр
+          <select id="director"><option value="all">все режиссёры</option></select>
+        </label>
+        <label class="sort">Сортировка
+          <select id="sort">
+            <option value="original">как в списке</option>
+            <option value="az">по алфавиту</option>
+            <option value="rating">по моей оценке</option>
+          </select>
+        </label>
+      </div>
+
+      <div id="grid" class="film-grid" aria-live="polite"></div>
+      <div id="empty" class="empty" hidden>
+        <span>ПЛЁНКА ПУСТА</span>
+        <h3>Ничего не найдено</h3>
+        <p>Попробуй изменить запрос или выбрать другой фильтр.</p>
+        <button id="reset">Сбросить фильтры</button>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="ratingDialog" class="rating-dialog">
+    <button class="dialog-close" aria-label="Закрыть">×</button>
+    <p class="eyebrow">ЛИЧНАЯ ОЦЕНКА</p>
+    <h2 id="dialogTitle"></h2>
+    <p>Как тебе это кино?</p>
+    <div id="ratingButtons" class="rating-buttons"></div>
+    <button id="removeRating" class="remove-rating">Удалить оценку</button>
+  </dialog>
+
+  <dialog id="detailsDialog" class="details-dialog">
+    <div id="detailsBackdrop" class="details-backdrop"></div>
+    <button class="details-close" aria-label="Закрыть">×</button>
+    <div class="details-content">
+      <p id="detailsNumber" class="eyebrow"></p>
+      <h2 id="detailsTitle"></h2>
+      <div class="details-tags"><span id="detailsType"></span><span id="detailsGenre"></span></div>
+      <p id="detailsDescription" class="details-description"></p>
+      <div id="detailsLoading" class="details-loading">Загружаю описание и обложку…</div>
+      <div class="details-actions">
+        <a id="trailerLink" target="_blank" rel="noopener"><span class="play-icon">▶</span> Смотреть трейлер</a>
+        <button id="detailsRate">Поставить оценку</button>
+      </div>
+      <p class="details-note">Трейлер откроется в поиске YouTube — так всегда найдётся актуальная официальная версия.</p>
+    </div>
+  </dialog>
+
+  <footer><span>VERBTW FILMS</span><span>Продолжение следует ···</span></footer>
+  <script src="data.js?v=8"></script>
+  <script src="app.js?v=8"></script>
+</body>
+</html>

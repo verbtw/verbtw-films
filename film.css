@@ -1,0 +1,41 @@
+:root{--night:#06131f;--blue:#76c7f2;--white:#f1f7fb;--muted:#a9bbc8;--line:rgba(220,240,250,.17)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--night);color:var(--white);font-family:Manrope,Arial,sans-serif;overflow-x:hidden}
+.page-backdrop{position:fixed;inset:-40px;z-index:-2;background:linear-gradient(90deg,rgba(3,15,25,.98),rgba(3,18,29,.82) 56%,rgba(3,18,29,.48)),url('assets/films-hero-blue-river.png') center/cover no-repeat;filter:blur(7px);transform:scale(1.05)}
+.page-backdrop:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,7,13,.65))}
+.film-header{height:76px;padding:0 5vw;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;border-bottom:1px solid var(--line);background:rgba(3,16,27,.2);backdrop-filter:blur(16px);font:10px Roboto Mono;text-transform:uppercase}
+.film-header a{color:inherit;text-decoration:none}
+.film-header .logo{font:600 25px Oswald;letter-spacing:.12em}
+.film-header>span{text-align:right;color:var(--muted)}
+.back{color:var(--muted)!important}
+.back:hover{color:var(--blue)!important}
+.film-page{width:min(1420px,90vw);min-height:calc(100vh - 76px);margin:auto;padding:65px 0;display:grid;grid-template-columns:minmax(300px,430px) minmax(0,1fr);gap:clamp(55px,8vw,130px);align-items:center}
+.detail-poster{aspect-ratio:2/3;border-radius:26px;overflow:hidden;background:rgba(19,46,66,.55);border:1px solid var(--line);box-shadow:0 35px 80px rgba(0,5,10,.55);display:grid;place-items:center}
+.detail-poster img{width:100%;height:100%;object-fit:cover;display:block}
+.poster-loading{font:10px Roboto Mono;color:var(--muted);text-transform:uppercase}
+.kicker,.description-block>span,.rating-section>span{font:500 10px Roboto Mono;text-transform:uppercase;letter-spacing:.15em;color:var(--blue)}
+.film-info h1{max-width:850px;margin:18px 0 24px;font:600 clamp(58px,7vw,112px)/.9 Oswald;text-transform:uppercase;letter-spacing:-.035em}
+.tags{display:flex;flex-wrap:wrap;gap:8px}
+.tags span{border:1px solid var(--line);border-radius:999px;background:rgba(12,40,58,.25);backdrop-filter:blur(10px);padding:7px 11px;font:9px Roboto Mono;text-transform:uppercase}
+.description-block{max-width:760px;margin:42px 0 28px;padding-top:20px;border-top:1px solid var(--line)}
+.description-block p{font-size:15px;line-height:1.8;color:#d0dee6}
+.trailer{display:inline-flex;align-items:center;gap:14px;padding:13px 20px 13px 13px;border-radius:999px;background:var(--white);color:var(--night);text-decoration:none;font:600 11px Roboto Mono;text-transform:uppercase}
+.trailer i{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--night);color:var(--blue);font-style:normal}
+.trailer span{display:flex;flex-direction:column}
+.trailer small{font:8px Roboto Mono;color:#526675;margin-bottom:3px}
+.rating-section{margin-top:38px;padding-top:20px;border-top:1px solid var(--line)}
+.rating-buttons{display:flex;flex-wrap:wrap;gap:6px;margin:15px 0}
+.rating-buttons button{width:40px;height:40px;border:1px solid var(--line);border-radius:10px;background:rgba(10,39,58,.28);color:var(--white);font:600 14px Oswald;cursor:pointer}
+.rating-buttons button:hover,.rating-buttons button.selected{background:var(--blue);color:var(--night)}
+.remove-rating{border:0;background:transparent;color:var(--muted);padding:0;border-bottom:1px solid;font:9px Roboto Mono;text-transform:uppercase;cursor:pointer}
+.remove-rating[hidden]{display:none}
+a:focus-visible,button:focus-visible{outline:3px solid var(--blue);outline-offset:4px}
+@media(max-width:800px){.film-header{padding:0 18px}
+.film-header>span{display:none}
+.film-page{grid-template-columns:1fr;width:min(92vw,560px);gap:45px;padding:35px 0 70px}
+.detail-poster{max-width:390px;width:100%;margin:auto}
+.film-info h1{font-size:17vw}
+.description-block p{font-size:14px}
+}
+
+.trailer{display:none}.trailer-section{max-width:760px;margin-top:30px}.trailer-section>span{display:block;margin-bottom:12px;font:500 10px Roboto Mono;text-transform:uppercase;letter-spacing:.15em;color:var(--blue)}.trailer-preview{position:relative;width:100%;aspect-ratio:16/9;border:1px solid var(--line);border-radius:22px;overflow:hidden;background:linear-gradient(135deg,rgba(13,59,87,.7),rgba(3,17,28,.95));box-shadow:0 24px 60px rgba(0,5,10,.35);cursor:pointer}.trailer-preview iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.trailer-cover{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:18px;background:linear-gradient(90deg,rgba(5,25,39,.72),rgba(8,48,72,.42)),url('assets/films-hero-blue-river.png') center/cover;color:var(--white);transition:transform .35s,filter .35s}.trailer-preview:hover .trailer-cover{transform:scale(1.025);filter:brightness(1.12)}.trailer-cover i{flex:0 0 58px;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:var(--white);color:var(--night);font-style:normal;box-shadow:0 10px 35px rgba(0,0,0,.3)}.trailer-cover div{display:flex;flex-direction:column}.trailer-cover b{font:600 15px Manrope}.trailer-cover small{margin-top:5px;color:#bcd0dc;font:9px Roboto Mono}.trailer-status{position:absolute;inset:0;display:none;place-items:center;background:#071724;color:var(--muted);font:10px Roboto Mono;text-transform:uppercase}.trailer-preview.loading .trailer-status{display:grid}.trailer-preview.loading .trailer-cover{display:none}
