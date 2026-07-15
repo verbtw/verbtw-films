@@ -6,6 +6,7 @@ const $ = selector => document.querySelector(selector);
 const grid = $('#grid');
 const search = $('#search');
 const sort = $('#sort');
+const contentTypeSelect = $('#contentType');
 const genreSelect = $('#genre');
 const directorSelect = $('#director');
 const ratingDialog = $('#ratingDialog');
@@ -49,7 +50,7 @@ function refreshSelects(){
 function render(){
   const term=search.value.trim().toLocaleLowerCase('ru');
   let list=normalized.filter(item=>{
-    const typeOk=activeFilter==='all'||item.type===activeFilter||(activeFilter==='rated'&&ratings[item.title]);
+    const typeOk=contentTypeSelect.value==='all'||item.type===contentTypeSelect.value;
     return typeOk&&(genreSelect.value==='all'||item.genre===genreSelect.value)&&(directorSelect.value==='all'||item.director===directorSelect.value)&&item.title.toLocaleLowerCase('ru').includes(term);
   });
   if(sort.value==='az')list.sort((a,b)=>a.title.localeCompare(b.title,'ru'));
@@ -119,7 +120,7 @@ $('#ratingButtons').addEventListener('click',e=>{if(!e.target.dataset.rating)ret
 $('#removeRating').addEventListener('click',()=>{delete ratings[selectedTitle];localStorage.setItem('slava-ratings',JSON.stringify(ratings));ratingDialog.close();updateStats();render();});
 $('.dialog-close').addEventListener('click',()=>ratingDialog.close());$('.details-close').addEventListener('click',()=>detailsDialog.close());
 ratingDialog.addEventListener('click',e=>{if(e.target===ratingDialog)ratingDialog.close();});detailsDialog.addEventListener('click',e=>{if(e.target===detailsDialog)detailsDialog.close();});
-search.addEventListener('input',render);sort.addEventListener('change',render);genreSelect.addEventListener('change',render);directorSelect.addEventListener('change',render);
+search.addEventListener('input',render);sort.addEventListener('change',render);contentTypeSelect.addEventListener('change',render);genreSelect.addEventListener('change',render);directorSelect.addEventListener('change',render);
 document.querySelectorAll('[data-hero-filter]').forEach(button=>button.addEventListener('click',()=>{activeFilter=button.dataset.heroFilter;document.querySelector('.filter.active')?.classList.remove('active');document.querySelector(`[data-filter="${activeFilter}"]`)?.classList.add('active');render();document.querySelector('#collection').scrollIntoView({behavior:'smooth'});}));
-$('#reset').addEventListener('click',()=>{search.value='';sort.value='original';genreSelect.value='all';directorSelect.value='all';activeFilter='all';render();});
+$('#reset').addEventListener('click',()=>{search.value='';sort.value='original';contentTypeSelect.value='all';genreSelect.value='all';directorSelect.value='all';activeFilter='all';render();});
 refreshSelects();updateStats();render();

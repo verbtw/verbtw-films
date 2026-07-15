@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Oswald:wght@500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=8">
+  <link rel="stylesheet" href="styles.css?v=9">
 </head>
 <body>
   <div class="projector" aria-hidden="true"></div>
@@ -46,6 +46,13 @@
           <span class="sr-only">Найти фильм или сериал</span>
           <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m21 21-4.35-4.35m2.35-5.65a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"/></svg>
           <input id="search" type="search" placeholder="Найти в архиве…" autocomplete="off">
+        </label>
+        <label class="sort">Тип
+          <select id="contentType">
+            <option value="all">все</option>
+            <option value="movie">фильмы</option>
+            <option value="series">сериалы</option>
+          </select>
         </label>
         <label class="sort">Жанр
           <select id="genre"><option value="all">все жанры</option></select>
@@ -99,7 +106,7 @@
   </dialog>
 
   <footer><span>VERBTW FILMS</span><span>Продолжение следует ···</span></footer>
-  <script src="data.js?v=8"></script>
-  <script src="app.js?v=8"></script>
+  <script src="data.js?v=9"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>
