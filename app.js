@@ -1,5 +1,7 @@
 const ratings = JSON.parse(localStorage.getItem('slava-ratings') || '{}');
-const metadata = JSON.parse(localStorage.getItem('slava-metadata-v3') || '{}');
+const metadataCacheKey = 'slava-metadata-v4';
+const metadata = JSON.parse(localStorage.getItem(metadataCacheKey) || '{}');
+const wikiTitleOverrides = {'Чернобыль':'Чернобыль (мини-сериал)'};
 let activeFilter = 'all';
 let selectedTitle = null;
 const $ = selector => document.querySelector(selector);
@@ -73,7 +75,9 @@ async function fetchMetadata(item){
   if(metadata[item.title]?.description&&metadata[item.title]?.poster)return metadata[item.title];
   try{
     const query=`${item.title} ${item.type==='series'?'телесериал':'фильм'}`;
-    const url=`https://ru.wikipedia.org/w/api.php?origin=*&action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=1&prop=pageimages%7Cextracts%7Cpageprops&piprop=thumbnail&pithumbsize=700&exintro=1&explaintext=1&exsentences=4&format=json`;
+    const exactWikiTitle=wikiTitleOverrides[item.title];
+    const pageSelector=exactWikiTitle?`titles=${encodeURIComponent(exactWikiTitle)}`:`generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=1`;
+    const url=`https://ru.wikipedia.org/w/api.php?origin=*&action=query&${pageSelector}&prop=pageimages%7Cextracts%7Cpageprops&piprop=thumbnail&pithumbsize=700&exintro=1&explaintext=1&exsentences=4&format=json`;
     const json=await fetch(url).then(r=>r.json());
     const page=Object.values(json.query?.pages||{})[0];
     if(!page)throw new Error('not found');
@@ -90,7 +94,7 @@ async function fetchMetadata(item){
       }
     }
     metadata[item.title]=result;item.director=result.director;
-    localStorage.setItem('slava-metadata-v3',JSON.stringify(metadata));
+    localStorage.setItem(metadataCacheKey,JSON.stringify(metadata));
     return result;
   }catch(error){return metadata[item.title]||{poster:'',description:'Описание пока не загрузилось. Проверь подключение к интернету.',director:item.director};}
 }
