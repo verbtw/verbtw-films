@@ -2,6 +2,7 @@ const ratings = JSON.parse(localStorage.getItem('slava-ratings') || '{}');
 const metadataCacheKey = 'slava-metadata-v5';
 const metadata = JSON.parse(localStorage.getItem(metadataCacheKey) || '{}');
 const imdbCache = JSON.parse(localStorage.getItem('verbtw-imdb-v1') || '{}');
+const imdbRequests = new Map();
 let communityRatings = {};
 const wikiTitleOverrides = {'Чернобыль':'Чернобыль (мини-сериал)','Артур, ты король':'Артур, ты король'};
 let activeFilter = 'all';
@@ -10,6 +11,8 @@ const $ = selector => document.querySelector(selector);
 const grid = $('#grid');
 const search = $('#search');
 const sort = $('#sort');
+const sortDirection = $('#sortDirection');
+const sortDirectionWrap = $('#sortDirectionWrap');
 const contentTypeSelect = $('#contentType');
 const genreSelect = $('#genre');
 const directorSelect = $('#director');
@@ -65,10 +68,10 @@ function render(){
     return typeOk&&(genreSelect.value==='all'||item.genre===genreSelect.value)&&(directorSelect.value==='all'||item.director===directorSelect.value)&&item.title.toLocaleLowerCase('ru').includes(term);
   });
   if(sort.value==='az')list.sort((a,b)=>a.title.localeCompare(b.title,'ru'));
-  if(sort.value==='community-desc')list.sort((a,b)=>compareByRating(a,b,item=>communityRatings[item.title]?.count?communityRatings[item.title].average:NaN,'desc'));
-  if(sort.value==='community-asc')list.sort((a,b)=>compareByRating(a,b,item=>communityRatings[item.title]?.count?communityRatings[item.title].average:NaN,'asc'));
-  if(sort.value==='rating-desc')list.sort((a,b)=>compareByRating(a,b,item=>Number.isFinite(ratings[item.title])?ratings[item.title]:NaN,'desc'));
-  if(sort.value==='rating-asc')list.sort((a,b)=>compareByRating(a,b,item=>Number.isFinite(ratings[item.title])?ratings[item.title]:NaN,'asc'));
+  if(sort.value==='imdb')list.sort((a,b)=>compareByRating(a,b,item=>{
+    const value=Number(imdbCache[item.title]?.rating);
+    return Number.isFinite(value)&&value>0?value:NaN;
+  },sortDirection.value));
   grid.innerHTML=list.map(item=>{
     const meta=metadata[item.title]; const poster=meta?.poster;
     return `<a class="film-card" data-index="${item.index}" href="film.html?id=${item.index}" style="--card-hue:${hue(item.title)}" aria-label="Открыть страницу фильма: ${escapeHtml(item.title)}">
@@ -112,14 +115,45 @@ async function fetchMetadata(item){
 }
 async function fetchImdb(item){
   if(imdbCache[item.title]?.rating)return imdbCache[item.title];
-  try{
+  if(imdbRequests.has(item.title))return imdbRequests.get(item.title);
+  const request=(async()=>{try{
     const response=await fetch(`/api/imdb?title=${encodeURIComponent(item.title)}&type=${item.type}`);
     if(!response.ok)throw new Error('IMDb unavailable');
     const result=await response.json();
     imdbCache[item.title]=result;
     localStorage.setItem('verbtw-imdb-v1',JSON.stringify(imdbCache));
     return result;
-  }catch(error){return {rating:''};}
+  }catch(error){return {rating:''};}finally{imdbRequests.delete(item.title);}})();
+  imdbRequests.set(item.title,request);
+  return request;
+}
+let imdbLoading=false;
+async function loadImdbForSorting(){
+  if(imdbLoading)return;
+  const missing=normalized.filter(item=>!imdbCache[item.title]?.rating);
+  if(!missing.length)return render();
+  imdbLoading=true;
+  const option=sort.querySelector('option[value="imdb"]');
+  const total=missing.length;
+  let completed=0;
+  const workers=Array.from({length:Math.min(8,missing.length)},async()=>{
+    while(missing.length){
+      const item=missing.shift();
+      await fetchImdb(item);
+      completed+=1;
+      option.textContent=`IMDb · загрузка ${completed}/${total}`;
+      if(sort.value==='imdb'&&(completed%8===0||!missing.length))render();
+    }
+  });
+  await Promise.all(workers);
+  option.textContent='по оценке IMDb';
+  imdbLoading=false;
+  if(sort.value==='imdb')render();
+}
+function updateSortControls(){
+  const imdbSelected=sort.value==='imdb';
+  sortDirectionWrap.hidden=!imdbSelected;
+  if(imdbSelected)loadImdbForSorting();
 }
 let posterObserver;
 function observePosters(){
@@ -148,10 +182,10 @@ $('#ratingButtons').addEventListener('click',e=>{if(!e.target.dataset.rating)ret
 $('#removeRating').addEventListener('click',()=>{delete ratings[selectedTitle];localStorage.setItem('slava-ratings',JSON.stringify(ratings));ratingDialog.close();updateStats();render();});
 $('.dialog-close').addEventListener('click',()=>ratingDialog.close());$('.details-close').addEventListener('click',()=>detailsDialog.close());
 ratingDialog.addEventListener('click',e=>{if(e.target===ratingDialog)ratingDialog.close();});detailsDialog.addEventListener('click',e=>{if(e.target===detailsDialog)detailsDialog.close();});
-search.addEventListener('input',render);sort.addEventListener('change',render);contentTypeSelect.addEventListener('change',render);genreSelect.addEventListener('change',render);directorSelect.addEventListener('change',render);
+search.addEventListener('input',render);sort.addEventListener('change',()=>{updateSortControls();render();});sortDirection.addEventListener('change',render);contentTypeSelect.addEventListener('change',render);genreSelect.addEventListener('change',render);directorSelect.addEventListener('change',render);
 document.querySelectorAll('[data-hero-filter]').forEach(button=>button.addEventListener('click',()=>{activeFilter=button.dataset.heroFilter;document.querySelector('.filter.active')?.classList.remove('active');document.querySelector(`[data-filter="${activeFilter}"]`)?.classList.add('active');render();document.querySelector('#collection').scrollIntoView({behavior:'smooth'});}));
-$('#reset').addEventListener('click',()=>{search.value='';sort.value='community-desc';contentTypeSelect.value='all';genreSelect.value='all';directorSelect.value='all';activeFilter='all';render();});
-refreshSelects();updateStats();render();
+$('#reset').addEventListener('click',()=>{search.value='';sort.value='az';sortDirection.value='desc';contentTypeSelect.value='all';genreSelect.value='all';directorSelect.value='all';activeFilter='all';updateSortControls();render();});
+refreshSelects();updateStats();updateSortControls();render();
 window.addEventListener('community:ratings',event=>{communityRatings=event.detail.summaries||{};render();});
 async function syncPersonalRatings(api,user){
   if(!user){updateStats();render();return;}

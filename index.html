@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Oswald:wght@500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=11">
+  <link rel="stylesheet" href="styles.css?v=12">
   <link rel="stylesheet" href="community.css?v=1">
 </head>
 <body>
@@ -67,11 +67,14 @@
         </label>
         <label class="sort">Сортировка
           <select id="sort">
-            <option value="community-desc">VERBTW: 10 → 1</option>
-            <option value="community-asc">VERBTW: 1 → 10</option>
             <option value="az">по алфавиту</option>
-            <option value="rating-desc">моя оценка: 10 → 1</option>
-            <option value="rating-asc">моя оценка: 1 → 10</option>
+            <option value="imdb">по оценке IMDb</option>
+          </select>
+        </label>
+        <label id="sortDirectionWrap" class="sort sort-direction" hidden>Направление
+          <select id="sortDirection">
+            <option value="desc">по убыванию</option>
+            <option value="asc">по возрастанию</option>
           </select>
         </label>
       </div>
@@ -116,6 +119,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="community.js?v=1"></script>
   <script src="data.js?v=10"></script>
-  <script src="app.js?v=13"></script>
+  <script src="app.js?v=14"></script>
 </body>
 </html>
