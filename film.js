@@ -11,6 +11,11 @@ let ratingApi=null;
 if(metadata[title]&&wikiTitleOverrides[title]&&metadata[title].sourceTitle!==wikiTitleOverrides[title]){delete metadata[title];localStorage.setItem(metadataCacheKey,JSON.stringify(metadata));}
 const cached=metadata[title]||{};
 const $=selector=>document.querySelector(selector);
+function returnToCatalog(){
+  const cameFromCatalog=document.referrer.startsWith(`${location.origin}/index.html`)||document.referrer===`${location.origin}/`;
+  if(cameFromCatalog&&history.length>1)history.back();else location.href='index.html#collection';
+}
+$('#backToCollection').addEventListener('click',event=>{event.preventDefault();returnToCatalog();});
 const genreRules=[['Фантастика',/матриц|интерстеллар|начало|довод|аватар|чуж|терминатор|бегущий|планет.*обезьян|я робот|веном|человек-паук|мир юрского|война миров|исходный код/i],['Криминал',/крестн|казино|славные парни|лицо со шрамом|донни браско|гангстер|криминальное|общак|джон уик|карты деньги|джентельмен|борн|уравнитель|перевозчик|форсаж/i],['Военный',/ярость|дюнкерк|гладиатор|троя|последний самурай|бесславные|морпехи/i],['Ужасы',/пила|мученицы|паранормальное|челюсти|1408|маяк|молчание ягнят/i],['Спорт',/рокки|крид|боец|левша|воин|тренер картер|гонка|f1/i],['Комедия',/мальчишник|такси|третий лишний|полтора шпиона|одноклассники|стажер/i],['Романтика',/500 дней|10 причин|дневник памяти|ла-ла ленд|до встречи|звезда родилась|джо блэк/i],['Фэнтези',/гарри поттер|пираты карибского/i],['Триллер',/семь$|зодиак|пленницы|остров проклятых|бойцовский|моменто|донни дарко|эффект бабочки/i]];
 const genre=(genreRules.find(([,rule])=>rule.test(title))||['Драма'])[0];
 document.title=`${title} — VERBTW FILMS`;$('#filmTitle').textContent=title;$('#filmType').textContent=type;$('#filmGenre').textContent=genre;$('#filmDirector').textContent=cached.director||'Режиссёр загружается';$('#archiveNumber').textContent=`${String(index+1).padStart(3,'0')} / ${movies.length}`;
@@ -22,11 +27,11 @@ async function syncAccountRating(user){
   if(!ratingApi?.available)return;
   if(!user){delete ratings[title];localStorage.setItem('slava-ratings',JSON.stringify(ratings));$('#ratingHelp').textContent='Войди в аккаунт, чтобы оценка сохранилась на всех устройствах.';renderRating();return;}
   const pending=Number(sessionStorage.getItem(`pending-rating:${title}`));
-  if(pending){await ratingApi.saveRating(title,pending);sessionStorage.removeItem(`pending-rating:${title}`);ratings[title]=pending;}
+  if(pending){await ratingApi.saveRating(title,pending);sessionStorage.removeItem(`pending-rating:${title}`);ratings[title]=pending;returnToCatalog();}
   else{const cloudRating=await ratingApi.myRating(title);if(cloudRating)ratings[title]=cloudRating;else delete ratings[title];}
   localStorage.setItem('slava-ratings',JSON.stringify(ratings));$('#ratingHelp').textContent='Оценка сохранится в твоём аккаунте.';renderRating();
 }
-$('#ratingButtons').addEventListener('click',async e=>{if(!e.target.dataset.rating)return;const value=Number(e.target.dataset.rating);ratings[title]=value;localStorage.setItem('slava-ratings',JSON.stringify(ratings));renderRating();ratingApi=ratingApi||await window.communityReady;if(ratingApi?.user)await ratingApi.saveRating(title,value);else{sessionStorage.setItem(`pending-rating:${title}`,String(value));ratingApi?.openAuth('Войди или создай аккаунт, чтобы сохранить оценку.');}});
+$('#ratingButtons').addEventListener('click',async e=>{if(!e.target.dataset.rating)return;const value=Number(e.target.dataset.rating);ratings[title]=value;localStorage.setItem('slava-ratings',JSON.stringify(ratings));renderRating();ratingApi=ratingApi||await window.communityReady;if(ratingApi?.user){await ratingApi.saveRating(title,value);returnToCatalog();}else{sessionStorage.setItem(`pending-rating:${title}`,String(value));ratingApi?.openAuth('Войди или создай аккаунт, чтобы сохранить оценку.');}});
 $('#removeRating').addEventListener('click',async()=>{delete ratings[title];localStorage.setItem('slava-ratings',JSON.stringify(ratings));renderRating();ratingApi=ratingApi||await window.communityReady;if(ratingApi?.user)await ratingApi.removeRating(title);});renderRating();
 window.addEventListener('community:ratings',event=>renderCommunitySummary(event.detail.summaries?.[title]));
 window.communityReady?.then(async api=>{ratingApi=api;if(!api.available)return;const summaries=await api.loadSummaries();renderCommunitySummary(summaries[title]);api.onAuth(user=>syncAccountRating(user).catch(()=>{}));await syncAccountRating(api.user);}).catch(()=>{});

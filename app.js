@@ -23,6 +23,7 @@ const genreSelect = $('#genre');
 const directorSelect = $('#director');
 const ratingDialog = $('#ratingDialog');
 const detailsDialog = $('#detailsDialog');
+const catalogStateKey = 'verbtw-catalog-state';
 
 const genreRules = [
   ['Фантастика', /матриц|интерстеллар|начало|довод|аватар|чуж|терминатор|бегущий|планет.*обезьян|я робот|веном|человек-паук|мир юрского|война миров|исходный код/i],
@@ -90,6 +91,43 @@ function render(){
 }
 function updateStats(){
   $('#totalTop').textContent=normalized.length;$('#movieCount').textContent=normalized.filter(x=>x.type==='movie').length;$('#seriesCount').textContent=normalized.filter(x=>x.type==='series').length;$('#ratedCount').textContent=Object.keys(ratings).length;
+}
+function saveCatalogState(card){
+  sessionStorage.setItem(catalogStateKey,JSON.stringify({
+    scrollY:window.scrollY,
+    index:Number(card.dataset.index),
+    cardOffset:card.getBoundingClientRect().top,
+    search:search.value,
+    sort:sort.value,
+    direction:sortDirection.value,
+    contentType:contentTypeSelect.value,
+    genre:genreSelect.value,
+    director:directorSelect.value
+  }));
+}
+function readCatalogState(){
+  try{return JSON.parse(sessionStorage.getItem(catalogStateKey)||'null');}catch(error){return null;}
+}
+function restoreCatalogState(state){
+  if(!state)return;
+  search.value=state.search||'';
+  sort.value=state.sort||'az';
+  sortDirection.value=state.direction||'desc';
+  contentTypeSelect.value=state.contentType||'all';
+  genreSelect.value=state.genre||'all';
+  directorSelect.value=state.director||'all';
+}
+function restoreCatalogScroll(state){
+  if(!state)return;
+  sessionStorage.removeItem(catalogStateKey);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    const previousBehavior=document.documentElement.style.scrollBehavior;
+    document.documentElement.style.scrollBehavior='auto';
+    const card=grid.querySelector(`[data-index="${Number(state.index)}"]`);
+    const cardTop=card?card.getBoundingClientRect().top+window.scrollY-Number(state.cardOffset||0):Number(state.scrollY)||0;
+    window.scrollTo(0,Math.max(0,cardTop));
+    document.documentElement.style.scrollBehavior=previousBehavior;
+  }));
 }
 async function fetchMetadata(item){
   if(metadata[item.title]?.description&&metadata[item.title]?.poster)return metadata[item.title];
@@ -187,10 +225,13 @@ $('#ratingButtons').addEventListener('click',e=>{if(!e.target.dataset.rating)ret
 $('#removeRating').addEventListener('click',()=>{delete ratings[selectedTitle];localStorage.setItem('slava-ratings',JSON.stringify(ratings));ratingDialog.close();updateStats();render();});
 $('.dialog-close').addEventListener('click',()=>ratingDialog.close());$('.details-close').addEventListener('click',()=>detailsDialog.close());
 ratingDialog.addEventListener('click',e=>{if(e.target===ratingDialog)ratingDialog.close();});detailsDialog.addEventListener('click',e=>{if(e.target===detailsDialog)detailsDialog.close();});
+grid.addEventListener('click',event=>{const card=event.target.closest('.film-card');if(card)saveCatalogState(card);});
 search.addEventListener('input',render);sort.addEventListener('change',()=>{updateSortControls();render();});sortDirection.addEventListener('change',render);contentTypeSelect.addEventListener('change',render);genreSelect.addEventListener('change',render);directorSelect.addEventListener('change',render);
 document.querySelectorAll('[data-hero-filter]').forEach(button=>button.addEventListener('click',()=>{activeFilter=button.dataset.heroFilter;document.querySelector('.filter.active')?.classList.remove('active');document.querySelector(`[data-filter="${activeFilter}"]`)?.classList.add('active');render();document.querySelector('#collection').scrollIntoView({behavior:'smooth'});}));
 $('#reset').addEventListener('click',()=>{search.value='';sort.value='az';sortDirection.value='desc';contentTypeSelect.value='all';genreSelect.value='all';directorSelect.value='all';activeFilter='all';updateSortControls();render();});
-refreshSelects();updateStats();updateSortControls();render();
+const savedCatalogState=readCatalogState();
+refreshSelects();restoreCatalogState(savedCatalogState);updateStats();updateSortControls();render();restoreCatalogScroll(savedCatalogState);
+window.addEventListener('pageshow',()=>{const state=readCatalogState();if(state)restoreCatalogScroll(state);});
 window.addEventListener('community:ratings',event=>{communityRatings=event.detail.summaries||{};render();});
 async function syncPersonalRatings(api,user){
   if(!user){updateStats();render();return;}
