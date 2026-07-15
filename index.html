@@ -67,9 +67,11 @@
         </label>
         <label class="sort">Сортировка
           <select id="sort">
-            <option value="community">по рейтингу зрителей</option>
+            <option value="community-desc">VERBTW: 10 → 1</option>
+            <option value="community-asc">VERBTW: 1 → 10</option>
             <option value="az">по алфавиту</option>
-            <option value="rating">по моей оценке</option>
+            <option value="rating-desc">моя оценка: 10 → 1</option>
+            <option value="rating-asc">моя оценка: 1 → 10</option>
           </select>
         </label>
       </div>
@@ -114,6 +116,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="community.js?v=1"></script>
   <script src="data.js?v=10"></script>
-  <script src="app.js?v=12"></script>
+  <script src="app.js?v=13"></script>
 </body>
 </html>

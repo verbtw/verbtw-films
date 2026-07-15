@@ -43,6 +43,13 @@ const normalized = movies.map((title,index) => ({title,index,type:index<4?'serie
 
 function escapeHtml(value){const el=document.createElement('div');el.textContent=value;return el.innerHTML;}
 function hue(title){return [...title].reduce((n,c)=>n+c.charCodeAt(0),0)%360;}
+function compareByRating(a,b,getRating,direction){
+  const aRating=getRating(a);const bRating=getRating(b);const aRated=Number.isFinite(aRating);const bRated=Number.isFinite(bRating);
+  if(aRated!==bRated)return aRated?-1:1;
+  if(!aRated)return a.title.localeCompare(b.title,'ru');
+  const difference=direction==='asc'?aRating-bRating:bRating-aRating;
+  return difference||a.title.localeCompare(b.title,'ru');
+}
 function refreshSelects(){
   const genreValue=genreSelect.value||'all';
   genreSelect.innerHTML='<option value="all">все жанры</option>'+[...new Set(normalized.map(x=>x.genre))].sort((a,b)=>a.localeCompare(b,'ru')).map(x=>`<option>${escapeHtml(x)}</option>`).join('');
@@ -58,8 +65,10 @@ function render(){
     return typeOk&&(genreSelect.value==='all'||item.genre===genreSelect.value)&&(directorSelect.value==='all'||item.director===directorSelect.value)&&item.title.toLocaleLowerCase('ru').includes(term);
   });
   if(sort.value==='az')list.sort((a,b)=>a.title.localeCompare(b.title,'ru'));
-  if(sort.value==='community')list.sort((a,b)=>(communityRatings[b.title]?.average||0)-(communityRatings[a.title]?.average||0)||(communityRatings[b.title]?.count||0)-(communityRatings[a.title]?.count||0)||a.index-b.index);
-  if(sort.value==='rating')list.sort((a,b)=>(ratings[b.title]||0)-(ratings[a.title]||0)||a.index-b.index);
+  if(sort.value==='community-desc')list.sort((a,b)=>compareByRating(a,b,item=>communityRatings[item.title]?.count?communityRatings[item.title].average:NaN,'desc'));
+  if(sort.value==='community-asc')list.sort((a,b)=>compareByRating(a,b,item=>communityRatings[item.title]?.count?communityRatings[item.title].average:NaN,'asc'));
+  if(sort.value==='rating-desc')list.sort((a,b)=>compareByRating(a,b,item=>Number.isFinite(ratings[item.title])?ratings[item.title]:NaN,'desc'));
+  if(sort.value==='rating-asc')list.sort((a,b)=>compareByRating(a,b,item=>Number.isFinite(ratings[item.title])?ratings[item.title]:NaN,'asc'));
   grid.innerHTML=list.map(item=>{
     const meta=metadata[item.title]; const poster=meta?.poster;
     return `<a class="film-card" data-index="${item.index}" href="film.html?id=${item.index}" style="--card-hue:${hue(item.title)}" aria-label="Открыть страницу фильма: ${escapeHtml(item.title)}">
@@ -141,7 +150,7 @@ $('.dialog-close').addEventListener('click',()=>ratingDialog.close());$('.detail
 ratingDialog.addEventListener('click',e=>{if(e.target===ratingDialog)ratingDialog.close();});detailsDialog.addEventListener('click',e=>{if(e.target===detailsDialog)detailsDialog.close();});
 search.addEventListener('input',render);sort.addEventListener('change',render);contentTypeSelect.addEventListener('change',render);genreSelect.addEventListener('change',render);directorSelect.addEventListener('change',render);
 document.querySelectorAll('[data-hero-filter]').forEach(button=>button.addEventListener('click',()=>{activeFilter=button.dataset.heroFilter;document.querySelector('.filter.active')?.classList.remove('active');document.querySelector(`[data-filter="${activeFilter}"]`)?.classList.add('active');render();document.querySelector('#collection').scrollIntoView({behavior:'smooth'});}));
-$('#reset').addEventListener('click',()=>{search.value='';sort.value='community';contentTypeSelect.value='all';genreSelect.value='all';directorSelect.value='all';activeFilter='all';render();});
+$('#reset').addEventListener('click',()=>{search.value='';sort.value='community-desc';contentTypeSelect.value='all';genreSelect.value='all';directorSelect.value='all';activeFilter='all';render();});
 refreshSelects();updateStats();render();
 window.addEventListener('community:ratings',event=>{communityRatings=event.detail.summaries||{};render();});
 async function syncPersonalRatings(api,user){
