@@ -3,6 +3,9 @@
   "functions": {
     "api/trailer.py": {
       "maxDuration": 30
+    },
+    "api/imdb.py": {
+      "maxDuration": 30
     }
   }
 }

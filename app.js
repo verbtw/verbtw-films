@@ -1,7 +1,8 @@
 const ratings = JSON.parse(localStorage.getItem('slava-ratings') || '{}');
-const metadataCacheKey = 'slava-metadata-v4';
+const metadataCacheKey = 'slava-metadata-v5';
 const metadata = JSON.parse(localStorage.getItem(metadataCacheKey) || '{}');
-const wikiTitleOverrides = {'Чернобыль':'Чернобыль (мини-сериал)'};
+const imdbCache = JSON.parse(localStorage.getItem('verbtw-imdb-v1') || '{}');
+const wikiTitleOverrides = {'Чернобыль':'Чернобыль (мини-сериал)','Артур, ты король':'Артур, ты король'};
 let activeFilter = 'all';
 let selectedTitle = null;
 const $ = selector => document.querySelector(selector);
@@ -60,7 +61,7 @@ function render(){
   grid.innerHTML=list.map(item=>{
     const meta=metadata[item.title]; const poster=meta?.poster;
     return `<a class="film-card" data-index="${item.index}" href="film.html?id=${item.index}" style="--card-hue:${hue(item.title)}" aria-label="Открыть страницу фильма: ${escapeHtml(item.title)}">
-      <div class="poster-wrap">${poster?`<img src="${escapeHtml(poster)}" alt="Обложка — ${escapeHtml(item.title)}" loading="lazy">`:`<div class="poster-placeholder"><b>${escapeHtml(item.title.slice(0,1))}</b><span>Загрузка обложки</span></div>`}<div class="poster-shade"></div><span class="card-number">${String(item.index+1).padStart(3,'0')}</span></div>
+      <div class="poster-wrap">${poster?`<img src="${escapeHtml(poster)}" alt="Обложка — ${escapeHtml(item.title)}" loading="lazy">`:`<div class="poster-placeholder"><b>${escapeHtml(item.title.slice(0,1))}</b><span>Загрузка обложки</span></div>`}<div class="poster-shade"></div><span class="card-number">${String(item.index+1).padStart(3,'0')}</span><span class="imdb-badge" aria-label="Оценка IMDb"><b>IMDb</b><span data-imdb>${imdbCache[item.title]?.rating||'—'}</span></span></div>
       <div class="card-body"><div class="film-card__meta"><span>${item.genre}</span><span>${item.type==='series'?'Сериал':'Фильм'}</span></div><h3>${escapeHtml(item.title)}</h3><div class="card-director">${escapeHtml(item.director)}</div><div class="card-footer"><span>Открыть страницу</span><span class="card-arrow">↗</span></div></div>
     </a>`;
   }).join('');
@@ -98,14 +99,26 @@ async function fetchMetadata(item){
     return result;
   }catch(error){return metadata[item.title]||{poster:'',description:'Описание пока не загрузилось. Проверь подключение к интернету.',director:item.director};}
 }
+async function fetchImdb(item){
+  if(imdbCache[item.title]?.rating)return imdbCache[item.title];
+  try{
+    const response=await fetch(`/api/imdb?title=${encodeURIComponent(item.title)}&type=${item.type}`);
+    if(!response.ok)throw new Error('IMDb unavailable');
+    const result=await response.json();
+    imdbCache[item.title]=result;
+    localStorage.setItem('verbtw-imdb-v1',JSON.stringify(imdbCache));
+    return result;
+  }catch(error){return {rating:''};}
+}
 let posterObserver;
 function observePosters(){
   posterObserver?.disconnect();
   posterObserver=new IntersectionObserver(entries=>entries.forEach(async entry=>{
     if(!entry.isIntersecting)return;posterObserver.unobserve(entry.target);
-    const item=normalized[Number(entry.target.dataset.index)];const meta=await fetchMetadata(item);
+    const item=normalized[Number(entry.target.dataset.index)];const [meta,imdb]=await Promise.all([fetchMetadata(item),fetchImdb(item)]);
     if(meta.poster&&!entry.target.querySelector('img')){const wrap=entry.target.querySelector('.poster-wrap');const placeholder=wrap.querySelector('.poster-placeholder');const img=new Image();img.alt=`Обложка — ${item.title}`;img.loading='lazy';img.onload=()=>{placeholder?.remove();wrap.prepend(img);};img.src=meta.poster;}
     const name=entry.target.querySelector('.card-director');if(name)name.textContent=item.director;
+    const imdbValue=entry.target.querySelector('[data-imdb]');if(imdbValue&&imdb.rating)imdbValue.textContent=imdb.rating;
     refreshSelects();
   }),{rootMargin:'500px 0px'});
   grid.querySelectorAll('.film-card').forEach(card=>posterObserver.observe(card));
