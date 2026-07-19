@@ -3,22 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Личная коллекция просмотренных фильмов и сериалов Славы">
+  <meta name="description" content="Личная коллекция просмотренных фильмов и сериалов VERBTW" data-i18n-content="metaDescription">
   <title>VERBTW FILMS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Oswald:wght@500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=12">
-  <link rel="stylesheet" href="community.css?v=1">
+  <link rel="stylesheet" href="styles.css?v=13">
+  <link rel="stylesheet" href="community.css?v=2">
 </head>
 <body>
   <div class="projector" aria-hidden="true"></div>
   <header class="topbar">
-    <a class="brand" href="#top" aria-label="В начало">VERBTW FILMS</a>
+    <a class="brand" href="#top" aria-label="В начало" data-i18n-aria="home">VERBTW FILMS</a>
     <div class="topbar-actions">
-      <div class="topbar__count"><span id="totalTop">0</span> записей в архиве</div>
-      <button class="auth-open" data-auth-open type="button">Войти</button>
-      <div class="user-menu" data-user-menu hidden><span class="user-name" data-user-name></span><button class="logout-button" data-logout type="button">Выйти</button></div>
+      <div class="topbar__count"><span id="totalTop">0</span> <span data-i18n="archiveCount">записей в архиве</span></div>
+      <div class="language-switch" aria-label="Language"><button type="button" data-language="ru">RU</button><button type="button" data-language="en">EN</button></div>
+      <button class="auth-open" data-auth-open data-i18n="signIn" type="button">Войти</button>
+      <div class="user-menu" data-user-menu hidden><span class="user-name" data-user-name></span><button class="logout-button" data-logout data-i18n="signOut" type="button">Выйти</button></div>
     </div>
   </header>
 
@@ -26,99 +27,100 @@
     <section class="hero">
       <div class="hero__kicker">VERBTW'S PERSONAL COLLECTION · 2026</div>
       <h1>FILMS</h1>
-      <p class="hero__intro">Фильмы и сериалы, которые оставили свой кадр в памяти. Открывай карточку — внутри описание, режиссёр, оценка и трейлер.</p>
+      <p class="hero__intro" data-i18n="heroIntro">Фильмы и сериалы, которые оставили свой кадр в памяти. Открывай карточку — внутри описание, режиссёр, оценка и трейлер.</p>
       <div class="hero-actions">
-        <button class="hero-primary" data-hero-filter="all">Смотреть коллекцию <span>↓</span></button>
+        <button class="hero-primary" data-hero-filter="all"><span data-i18n="viewCollection">Смотреть коллекцию</span> <span>↓</span></button>
       </div>
-      <div class="ticket" aria-label="Статистика коллекции">
-        <div><strong id="movieCount">0</strong><span>фильмов</span></div>
-        <div><strong id="seriesCount">0</strong><span>сериала</span></div>
-        <div><strong id="ratedCount">0</strong><span>оценено</span></div>
+      <div class="ticket" aria-label="Статистика коллекции" data-i18n-aria="collectionStats">
+        <div><strong id="movieCount">0</strong><span data-i18n="movies">фильмов</span></div>
+        <div><strong id="seriesCount">0</strong><span data-i18n="series">сериала</span></div>
+        <div><strong id="ratedCount">0</strong><span data-i18n="rated">оценено</span></div>
       </div>
     </section>
 
     <section class="collection" id="collection">
       <div class="collection__heading">
         <div>
-          <p class="eyebrow">КАТАЛОГ</p>
-          <h2>Просмотренное</h2>
+          <p class="eyebrow" data-i18n="catalog">КАТАЛОГ</p>
+          <h2 data-i18n="watched">Просмотренное</h2>
         </div>
         <p id="resultText" class="result-text"></p>
       </div>
 
       <div class="controls">
         <label class="search">
-          <span class="sr-only">Найти фильм или сериал</span>
+          <span class="sr-only" data-i18n="searchLabel">Найти фильм или сериал</span>
           <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m21 21-4.35-4.35m2.35-5.65a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"/></svg>
-          <input id="search" type="search" placeholder="Найти в архиве…" autocomplete="off">
+          <input id="search" type="search" placeholder="Найти в архиве…" data-i18n-placeholder="searchPlaceholder" autocomplete="off">
         </label>
-        <label class="sort">Тип
+        <label class="sort"><span data-i18n="type">Тип</span>
           <select id="contentType">
-            <option value="all">все</option>
-            <option value="movie">фильмы</option>
-            <option value="series">сериалы</option>
+            <option value="all" data-i18n="all">все</option>
+            <option value="movie" data-i18n="films">фильмы</option>
+            <option value="series" data-i18n="shows">сериалы</option>
           </select>
         </label>
-        <label class="sort">Жанр
+        <label class="sort"><span data-i18n="genre">Жанр</span>
           <select id="genre"><option value="all">все жанры</option></select>
         </label>
-        <label class="sort">Режиссёр
+        <label class="sort"><span data-i18n="director">Режиссёр</span>
           <select id="director"><option value="all">все режиссёры</option></select>
         </label>
-        <label class="sort">Сортировка
+        <label class="sort"><span data-i18n="sorting">Сортировка</span>
           <select id="sort">
-            <option value="az">по алфавиту</option>
-            <option value="imdb">по оценке IMDb</option>
+            <option value="az" data-i18n="alphabetical">по алфавиту</option>
+            <option value="imdb" data-i18n="byImdb">по оценке IMDb</option>
           </select>
         </label>
-        <label id="sortDirectionWrap" class="sort sort-direction" hidden>Направление
+        <label id="sortDirectionWrap" class="sort sort-direction" hidden><span data-i18n="direction">Направление</span>
           <select id="sortDirection">
-            <option value="desc">по убыванию</option>
-            <option value="asc">по возрастанию</option>
+            <option value="desc" data-i18n="descending">по убыванию</option>
+            <option value="asc" data-i18n="ascending">по возрастанию</option>
           </select>
         </label>
       </div>
 
       <div id="grid" class="film-grid" aria-live="polite"></div>
       <div id="empty" class="empty" hidden>
-        <span>ПЛЁНКА ПУСТА</span>
-        <h3>Ничего не найдено</h3>
-        <p>Попробуй изменить запрос или выбрать другой фильтр.</p>
-        <button id="reset">Сбросить фильтры</button>
+        <span data-i18n="emptyFilm">ПЛЁНКА ПУСТА</span>
+        <h3 data-i18n="nothingFound">Ничего не найдено</h3>
+        <p data-i18n="emptyHelp">Попробуй изменить запрос или выбрать другой фильтр.</p>
+        <button id="reset" data-i18n="resetFilters">Сбросить фильтры</button>
       </div>
     </section>
   </main>
 
   <dialog id="ratingDialog" class="rating-dialog">
-    <button class="dialog-close" aria-label="Закрыть">×</button>
-    <p class="eyebrow">ЛИЧНАЯ ОЦЕНКА</p>
+    <button class="dialog-close" aria-label="Закрыть" data-i18n-aria="close">×</button>
+    <p class="eyebrow" data-i18n="personalRating">ЛИЧНАЯ ОЦЕНКА</p>
     <h2 id="dialogTitle"></h2>
-    <p>Как тебе это кино?</p>
+    <p data-i18n="howWasIt">Как тебе это кино?</p>
     <div id="ratingButtons" class="rating-buttons"></div>
-    <button id="removeRating" class="remove-rating">Удалить оценку</button>
+    <button id="removeRating" class="remove-rating" data-i18n="removeRating">Удалить оценку</button>
   </dialog>
 
   <dialog id="detailsDialog" class="details-dialog">
     <div id="detailsBackdrop" class="details-backdrop"></div>
-    <button class="details-close" aria-label="Закрыть">×</button>
+    <button class="details-close" aria-label="Закрыть" data-i18n-aria="close">×</button>
     <div class="details-content">
       <p id="detailsNumber" class="eyebrow"></p>
       <h2 id="detailsTitle"></h2>
       <div class="details-tags"><span id="detailsType"></span><span id="detailsGenre"></span></div>
       <p id="detailsDescription" class="details-description"></p>
-      <div id="detailsLoading" class="details-loading">Загружаю описание и обложку…</div>
+      <div id="detailsLoading" class="details-loading" data-i18n="loadingDetails">Загружаю описание и обложку…</div>
       <div class="details-actions">
-        <a id="trailerLink" target="_blank" rel="noopener"><span class="play-icon">▶</span> Смотреть трейлер</a>
-        <button id="detailsRate">Поставить оценку</button>
+        <a id="trailerLink" target="_blank" rel="noopener"><span class="play-icon">▶</span> <span data-i18n="watchTrailer">Смотреть трейлер</span></a>
+        <button id="detailsRate" data-i18n="rate">Поставить оценку</button>
       </div>
-      <p class="details-note">Трейлер откроется в поиске YouTube — так всегда найдётся актуальная официальная версия.</p>
+      <p class="details-note" data-i18n="trailerNote">Трейлер откроется в поиске YouTube — так всегда найдётся актуальная официальная версия.</p>
     </div>
   </dialog>
 
-  <footer><span>VERBTW FILMS</span><span>Продолжение следует ···</span></footer>
+  <footer><span>VERBTW FILMS</span><span data-i18n="continued">Продолжение следует ···</span></footer>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="community.js?v=1"></script>
+  <script src="i18n.js?v=1"></script>
+  <script src="community.js?v=2"></script>
   <script src="data.js?v=11"></script>
-  <script src="app.js?v=17"></script>
+  <script src="app.js?v=18"></script>
 </body>
 </html>

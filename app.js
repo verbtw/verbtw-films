@@ -24,6 +24,9 @@ const directorSelect = $('#director');
 const ratingDialog = $('#ratingDialog');
 const detailsDialog = $('#detailsDialog');
 const catalogStateKey = 'verbtw-catalog-state';
+const t = (key,values) => window.i18n.t(key,values);
+const genreTranslations={Фантастика:'Science fiction',Криминал:'Crime',Военный:'War',Ужасы:'Horror',Спорт:'Sport',Комедия:'Comedy',Романтика:'Romance',Фэнтези:'Fantasy',Триллер:'Thriller',Драма:'Drama'};
+const displayGenre=genre=>window.i18n.language==='en'?(genreTranslations[genre]||genre):genre;
 
 const genreRules = [
   ['Фантастика', /матриц|интерстеллар|начало|довод|аватар|чуж|терминатор|бегущий|планет.*обезьян|я робот|веном|человек-паук|мир юрского|война миров|исходный код/i],
@@ -61,10 +64,10 @@ function compareByRating(a,b,getRating,direction){
 }
 function refreshSelects(){
   const genreValue=genreSelect.value||'all';
-  genreSelect.innerHTML='<option value="all">все жанры</option>'+[...new Set(normalized.map(x=>x.genre))].sort((a,b)=>a.localeCompare(b,'ru')).map(x=>`<option>${escapeHtml(x)}</option>`).join('');
+  genreSelect.innerHTML=`<option value="all">${t('allGenres')}</option>`+[...new Set(normalized.map(x=>x.genre))].sort((a,b)=>a.localeCompare(b,'ru')).map(x=>`<option value="${escapeHtml(x)}">${escapeHtml(displayGenre(x))}</option>`).join('');
   genreSelect.value=genreValue;
   const directorValue=directorSelect.value||'all';
-  directorSelect.innerHTML='<option value="all">все режиссёры</option>'+[...new Set(normalized.map(x=>x.director))].sort((a,b)=>a.localeCompare(b,'ru')).map(x=>`<option>${escapeHtml(x)}</option>`).join('');
+  directorSelect.innerHTML=`<option value="all">${t('allDirectors')}</option>`+[...new Set(normalized.map(x=>x.director))].sort((a,b)=>a.localeCompare(b,'ru')).map(x=>`<option>${escapeHtml(x)}</option>`).join('');
   directorSelect.value=directorValue;
 }
 function render(){
@@ -80,12 +83,12 @@ function render(){
   },sortDirection.value));
   grid.innerHTML=list.map(item=>{
     const meta=metadata[item.title]; const poster=meta?.poster;
-    return `<a class="film-card" data-index="${item.index}" href="film.html?id=${item.index}" style="--card-hue:${hue(item.title)}" aria-label="Открыть страницу фильма: ${escapeHtml(item.title)}">
-      <div class="poster-wrap">${poster?`<img src="${escapeHtml(poster)}" alt="Обложка — ${escapeHtml(item.title)}" loading="lazy">`:`<div class="poster-placeholder"><b>${escapeHtml(item.title.slice(0,1))}</b><span>Загрузка обложки</span></div>`}<div class="poster-shade"></div><span class="card-number">${String(item.index+1).padStart(3,'0')}</span><span class="imdb-badge" aria-label="Оценка IMDb"><b>IMDb</b><span data-imdb>${imdbCache[item.title]?.rating||'—'}</span></span></div>
-      <div class="card-body"><div class="film-card__meta"><span>${item.genre}</span><span>${item.type==='series'?'Сериал':'Фильм'}</span></div><h3>${escapeHtml(item.title)}</h3><div class="card-director">${escapeHtml(item.director)}</div><div class="community-score"><b>VERBTW</b><span>${communityRatings[item.title]?.average?.toFixed(1)||'—'}</span><small>${communityRatings[item.title]?.count?`${communityRatings[item.title].count} оценок`:'нет оценок'}</small></div><div class="card-footer"><span>Открыть страницу</span><span class="card-arrow">↗</span></div></div>
+    return `<a class="film-card" data-index="${item.index}" href="film.html?id=${item.index}" style="--card-hue:${hue(item.title)}" aria-label="${escapeHtml(t('openFilm',{title:item.title}))}">
+      <div class="poster-wrap">${poster?`<img src="${escapeHtml(poster)}" alt="${escapeHtml(t('cover',{title:item.title}))}" loading="lazy">`:`<div class="poster-placeholder"><b>${escapeHtml(item.title.slice(0,1))}</b><span>${t('coverLoading')}</span></div>`}<div class="poster-shade"></div><span class="card-number">${String(item.index+1).padStart(3,'0')}</span><span class="imdb-badge" aria-label="IMDb"><b>IMDb</b><span data-imdb>${imdbCache[item.title]?.rating||'—'}</span></span></div>
+      <div class="card-body"><div class="film-card__meta"><span>${escapeHtml(displayGenre(item.genre))}</span><span>${t(item.type==='series'?'show':'movie')}</span></div><h3>${escapeHtml(item.title)}</h3><div class="card-director">${escapeHtml(item.director)}</div><div class="community-score"><b>VERBTW</b><span>${communityRatings[item.title]?.average?.toFixed(1)||'—'}</span><small>${communityRatings[item.title]?.count?t('ratingsCount',{count:communityRatings[item.title].count}):t('noRatings')}</small></div><div class="card-footer"><span>${t('openPage')}</span><span class="card-arrow">↗</span></div></div>
     </a>`;
   }).join('');
-  $('#resultText').textContent=`Показано ${list.length} из ${normalized.length}`;
+  $('#resultText').textContent=t('shown',{shown:list.length,total:normalized.length});
   grid.hidden=!list.length;$('#empty').hidden=!!list.length;
   observePosters();
 }
@@ -154,7 +157,7 @@ async function fetchMetadata(item){
     metadata[item.title]=result;item.director=result.director;
     localStorage.setItem(metadataCacheKey,JSON.stringify(metadata));
     return result;
-  }catch(error){return metadata[item.title]||{poster:'',description:'Описание пока не загрузилось. Проверь подключение к интернету.',director:item.director};}
+  }catch(error){return metadata[item.title]||{poster:'',description:t('descriptionError'),director:item.director};}
 }
 async function fetchImdb(item){
   if(imdbCache[item.title]?.rating)return imdbCache[item.title];
@@ -184,12 +187,12 @@ async function loadImdbForSorting(){
       const item=missing.shift();
       await fetchImdb(item);
       completed+=1;
-      option.textContent=`IMDb · загрузка ${completed}/${total}`;
+      option.textContent=t('imdbLoading',{done:completed,total});
       if(sort.value==='imdb'&&(completed%8===0||!missing.length))render();
     }
   });
   await Promise.all(workers);
-  option.textContent='по оценке IMDb';
+  option.textContent=t('byImdb');
   imdbLoading=false;
   if(sort.value==='imdb')render();
 }
@@ -204,7 +207,7 @@ function observePosters(){
   posterObserver=new IntersectionObserver(entries=>entries.forEach(async entry=>{
     if(!entry.isIntersecting)return;posterObserver.unobserve(entry.target);
     const item=normalized[Number(entry.target.dataset.index)];const [meta,imdb]=await Promise.all([fetchMetadata(item),fetchImdb(item)]);
-    if(meta.poster&&!entry.target.querySelector('img')){const wrap=entry.target.querySelector('.poster-wrap');const placeholder=wrap.querySelector('.poster-placeholder');const img=new Image();img.alt=`Обложка — ${item.title}`;img.loading='lazy';img.onload=()=>{placeholder?.remove();wrap.prepend(img);};img.src=meta.poster;}
+    if(meta.poster&&!entry.target.querySelector('img')){const wrap=entry.target.querySelector('.poster-wrap');const placeholder=wrap.querySelector('.poster-placeholder');const img=new Image();img.alt=t('cover',{title:item.title});img.loading='lazy';img.onload=()=>{placeholder?.remove();wrap.prepend(img);};img.src=meta.poster;}
     const name=entry.target.querySelector('.card-director');if(name)name.textContent=item.director;
     const imdbValue=entry.target.querySelector('[data-imdb]');if(imdbValue&&imdb.rating)imdbValue.textContent=imdb.rating;
     refreshSelects();
@@ -214,12 +217,12 @@ function observePosters(){
 function openRating(title){selectedTitle=title;$('#dialogTitle').textContent=title;$('#ratingButtons').innerHTML=Array.from({length:10},(_,i)=>`<button data-rating="${i+1}" class="${ratings[title]===i+1?'selected':''}">${i+1}</button>`).join('');$('#removeRating').hidden=!ratings[title];ratingDialog.showModal();}
 async function openDetails(item){
   const cached=metadata[item.title];
-  $('#detailsNumber').textContent=`FILMS · ${String(item.index+1).padStart(3,'0')}`;$('#detailsTitle').textContent=item.title;$('#detailsType').textContent=item.type==='series'?'Сериал':'Фильм';$('#detailsGenre').textContent=item.genre;$('#detailsDirector').textContent=item.director;$('#detailsDescription').textContent=cached?.description||`${item.title} — ${item.genre.toLocaleLowerCase('ru')} из личной коллекции Славы. Загружаю полное описание фильма…`;$('#detailsLoading').hidden=!!cached?.description;
+  $('#detailsNumber').textContent=`FILMS · ${String(item.index+1).padStart(3,'0')}`;$('#detailsTitle').textContent=item.title;$('#detailsType').textContent=t(item.type==='series'?'show':'movie');$('#detailsGenre').textContent=displayGenre(item.genre);$('#detailsDirector').textContent=item.director;$('#detailsDescription').textContent=cached?.description||t('loadingDetails');$('#detailsLoading').hidden=!!cached?.description;
   $('#detailsBackdrop').style.backgroundImage=cached?.poster?`url("${cached.poster}")`:`linear-gradient(135deg,hsl(${hue(item.title)} 45% 28%),#121522)`;
   $('#trailerLink').href=`https://www.youtube.com/results?search_query=${encodeURIComponent(item.title+' официальный трейлер русский')}`;
-  const rate=$('#detailsRate');rate.textContent=ratings[item.title]?`Моя оценка: ${ratings[item.title]}/10`:'Поставить оценку';rate.onclick=()=>{detailsDialog.close();openRating(item.title);};if(!detailsDialog.open)detailsDialog.showModal();
+  const rate=$('#detailsRate');rate.textContent=ratings[item.title]?t('myRating',{rating:ratings[item.title]}):t('rate');rate.onclick=()=>{detailsDialog.close();openRating(item.title);};if(!detailsDialog.open)detailsDialog.showModal();
   const meta=await fetchMetadata(item);if(!detailsDialog.open)return;
-  $('#detailsLoading').hidden=true;$('#detailsDescription').textContent=meta.description||'Описание этого фильма скоро появится в архиве.';$('#detailsDirector').textContent=meta.director;if(meta.poster)$('#detailsBackdrop').style.backgroundImage=`url("${meta.poster}")`;refreshSelects();
+  $('#detailsLoading').hidden=true;$('#detailsDescription').textContent=meta.description||t('descriptionSoon');$('#detailsDirector').textContent=meta.director;if(meta.poster)$('#detailsBackdrop').style.backgroundImage=`url("${meta.poster}")`;refreshSelects();
 }
 $('#ratingButtons').addEventListener('click',e=>{if(!e.target.dataset.rating)return;ratings[selectedTitle]=Number(e.target.dataset.rating);localStorage.setItem('slava-ratings',JSON.stringify(ratings));ratingDialog.close();updateStats();render();});
 $('#removeRating').addEventListener('click',()=>{delete ratings[selectedTitle];localStorage.setItem('slava-ratings',JSON.stringify(ratings));ratingDialog.close();updateStats();render();});
@@ -232,6 +235,8 @@ $('#reset').addEventListener('click',()=>{search.value='';sort.value='az';sortDi
 const savedCatalogState=readCatalogState();
 refreshSelects();restoreCatalogState(savedCatalogState);updateStats();updateSortControls();render();restoreCatalogScroll(savedCatalogState);
 window.addEventListener('pageshow',()=>{const state=readCatalogState();if(state)restoreCatalogScroll(state);});
+window.i18n.apply();
+window.addEventListener('languagechange',()=>{window.i18n.apply();refreshSelects();render();});
 window.addEventListener('community:ratings',event=>{communityRatings=event.detail.summaries||{};render();});
 async function syncPersonalRatings(api,user){
   if(!user){updateStats();render();return;}

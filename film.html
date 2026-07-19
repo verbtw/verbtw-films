@@ -7,48 +7,49 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Oswald:wght@500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="film.css?v=3">
-  <link rel="stylesheet" href="community.css?v=1">
+  <link rel="stylesheet" href="film.css?v=4">
+  <link rel="stylesheet" href="community.css?v=2">
 </head>
 <body>
   <div id="pageBackdrop" class="page-backdrop"></div>
   <header class="film-header">
-    <a id="backToCollection" class="back" href="index.html#collection">← Назад к коллекции</a>
+    <a id="backToCollection" class="back" href="index.html#collection" data-i18n="back">← Назад к коллекции</a>
     <a class="logo" href="index.html">VERBTW FILMS</a>
-    <div class="film-header-actions"><span id="archiveNumber">000 / 312</span><button class="auth-open" data-auth-open type="button">Войти</button><div class="user-menu" data-user-menu hidden><span class="user-name" data-user-name></span><button class="logout-button" data-logout type="button">Выйти</button></div></div>
+    <div class="film-header-actions"><span id="archiveNumber">000 / 312</span><div class="language-switch" aria-label="Language"><button type="button" data-language="ru">RU</button><button type="button" data-language="en">EN</button></div><button class="auth-open" data-auth-open data-i18n="signIn" type="button">Войти</button><div class="user-menu" data-user-menu hidden><span class="user-name" data-user-name></span><button class="logout-button" data-logout data-i18n="signOut" type="button">Выйти</button></div></div>
   </header>
   <main class="film-page">
     <section class="poster-column">
-      <div id="poster" class="detail-poster"><div class="poster-loading">Загрузка обложки…</div></div>
+      <div id="poster" class="detail-poster"><div class="poster-loading" data-i18n="posterLoading">Загрузка обложки…</div></div>
     </section>
     <section class="film-info">
-      <p id="kicker" class="kicker">КОЛЛЕКЦИЯ VERBTW</p>
+      <p id="kicker" class="kicker" data-i18n="collectionLabel">КОЛЛЕКЦИЯ VERBTW</p>
       <h1 id="filmTitle">Загрузка…</h1>
       <div class="tags"><span id="filmType">Фильм</span><span id="filmGenre">Жанр</span><span id="filmDirector">Режиссёр</span></div>
       <div class="description-block">
-        <span>Описание</span>
+        <span data-i18n="description">Описание</span>
         <p id="description">Загружаю описание фильма…</p>
       </div>
       <div class="trailer-section">
-        <span>Трейлер</span>
-        <div id="trailerPreview" class="trailer-preview" tabindex="0" role="button" aria-label="Наведи курсор, чтобы посмотреть трейлер">
-          <div id="trailerCover" class="trailer-cover"><i>▶</i><div><b>Наведи, чтобы посмотреть</b><small>Трейлер запустится без перехода с сайта</small></div></div>
-          <div id="trailerStatus" class="trailer-status">Ищу трейлер…</div>
+        <span data-i18n="trailer">Трейлер</span>
+        <div id="trailerPreview" class="trailer-preview" tabindex="0" role="button" aria-label="Наведи курсор, чтобы посмотреть трейлер" data-i18n-aria="trailerPreview">
+          <div id="trailerCover" class="trailer-cover"><i>▶</i><div><b data-i18n="hoverTrailer">Наведи, чтобы посмотреть</b><small data-i18n="trailerInline">Трейлер запустится без перехода с сайта</small></div></div>
+          <div id="trailerStatus" class="trailer-status" data-i18n="searchingTrailer">Ищу трейлер…</div>
         </div>
       </div>
       <div class="rating-section">
-        <span>Оценки зрителей</span>
-        <div class="community-summary"><strong id="communityAverage">—</strong><span>VERBTW RATING<br><small id="communityCount">Пока нет оценок</small></span></div>
-        <span>Моя оценка</span>
+        <span data-i18n="audienceRatings">Оценки зрителей</span>
+        <div class="community-summary"><strong id="communityAverage">—</strong><span><span data-i18n="communityRating">VERBTW RATING</span><br><small id="communityCount">Пока нет оценок</small></span></div>
+        <span data-i18n="myScore">Моя оценка</span>
         <div id="ratingButtons" class="rating-buttons"></div>
         <p id="ratingHelp" class="rating-help">Войди в аккаунт, чтобы оценка сохранилась на всех устройствах.</p>
-        <button id="removeRating" class="remove-rating">Удалить оценку</button>
+        <button id="removeRating" class="remove-rating" data-i18n="removeRating">Удалить оценку</button>
       </div>
     </section>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="community.js?v=1"></script>
+  <script src="i18n.js?v=1"></script>
+  <script src="community.js?v=2"></script>
   <script src="data.js?v=11"></script>
-  <script src="film.js?v=9"></script>
+  <script src="film.js?v=10"></script>
 </body>
 </html>

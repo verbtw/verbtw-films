@@ -4,26 +4,27 @@
   let summaries={};
   const listeners=new Set();
   const $=selector=>document.querySelector(selector);
+  const t=(key,values)=>window.i18n.t(key,values);
 
   function injectAuthDialog(){
     if($('#authDialog'))return;
     document.body.insertAdjacentHTML('beforeend',`<dialog id="authDialog" class="auth-dialog">
-      <button class="auth-close" type="button" aria-label="Закрыть">×</button>
-      <p class="auth-eyebrow">VERBTW COMMUNITY</p>
-      <h2 id="authTitle">Войти</h2>
-      <p id="authLead" class="auth-lead">Твои оценки сохранятся в аккаунте.</p>
+      <button class="auth-close" type="button" aria-label="${t('close')}">×</button>
+      <p class="auth-eyebrow">${t('community')}</p>
+      <h2 id="authTitle">${t('authTitle')}</h2>
+      <p id="authLead" class="auth-lead">${t('authLead')}</p>
       <form id="authForm">
-        <label id="nameField" hidden>Ник<input id="authName" name="name" minlength="2" maxlength="40" autocomplete="nickname"></label>
-        <label>Почта<input id="authEmail" name="email" type="email" required autocomplete="email"></label>
-        <label>Пароль<input id="authPassword" name="password" type="password" required minlength="6" autocomplete="current-password"></label>
+        <label id="nameField" hidden><span>${t('nickname')}</span><input id="authName" name="name" minlength="2" maxlength="40" autocomplete="nickname"></label>
+        <label><span>${t('email')}</span><input id="authEmail" name="email" type="email" required autocomplete="email"></label>
+        <label><span>${t('password')}</span><input id="authPassword" name="password" type="password" required minlength="6" autocomplete="current-password"></label>
         <p id="authMessage" class="auth-message" role="status"></p>
-        <button id="authSubmit" class="auth-submit" type="submit">Войти</button>
+        <button id="authSubmit" class="auth-submit" type="submit">${t('authTitle')}</button>
       </form>
-      <button id="authSwitch" class="auth-switch" type="button">Создать аккаунт</button>
+      <button id="authSwitch" class="auth-switch" type="button">${t('createAccount')}</button>
     </dialog>`);
   }
 
-  function userLabel(user){return user?.user_metadata?.display_name||user?.email?.split('@')[0]||'Профиль';}
+  function userLabel(user){return user?.user_metadata?.display_name||user?.email?.split('@')[0]||t('profile');}
   function updateAuthUi(){
     document.querySelectorAll('[data-auth-open]').forEach(el=>el.hidden=!!currentUser);
     document.querySelectorAll('[data-user-menu]').forEach(el=>el.hidden=!currentUser);
@@ -53,7 +54,7 @@
     return Object.fromEntries((data||[]).map(row=>[row.movie_title,row.rating]));
   }
   async function saveRating(title,rating){
-    if(!client||!currentUser){openAuth('Войди, чтобы оценка сохранилась в профиле.');return false;}
+    if(!client||!currentUser){openAuth(t('signInSave'));return false;}
     const {error}=await client.from('ratings').upsert({user_id:currentUser.id,movie_title:title,rating},{onConflict:'user_id,movie_title'});
     if(error)throw error;
     await loadSummaries();return true;
@@ -77,24 +78,33 @@
     injectAuthDialog();
     let registerMode=false;
     const dialog=$('#authDialog');
+    function translateAuth(){
+      $('#authTitle').textContent=registerMode?t('createAccount'):t('authTitle');
+      $('#authLead').textContent=registerMode?t('registerLead'):t('authLead');
+      $('#authSubmit').textContent=registerMode?t('register'):t('authTitle');
+      $('#authSwitch').textContent=registerMode?t('haveAccount'):t('createAccount');
+      const labels=dialog.querySelectorAll('form label span');labels[0].textContent=t('nickname');labels[1].textContent=t('email');labels[2].textContent=t('password');
+      $('.auth-close').setAttribute('aria-label',t('close'));
+    }
+    window.addEventListener('languagechange',translateAuth);
     $('.auth-close').addEventListener('click',()=>dialog.close());
     dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close();});
     document.querySelectorAll('[data-auth-open]').forEach(button=>button.addEventListener('click',()=>openAuth()));
     document.querySelectorAll('[data-logout]').forEach(button=>button.addEventListener('click',async()=>{if(client)await client.auth.signOut();}));
     $('#authSwitch').addEventListener('click',()=>{
       registerMode=!registerMode;
-      $('#authTitle').textContent=registerMode?'Создать аккаунт':'Войти';
-      $('#authLead').textContent=registerMode?'Оценивай фильмы и сохраняй историю.':'Твои оценки сохранятся в аккаунте.';
+      $('#authTitle').textContent=registerMode?t('createAccount'):t('authTitle');
+      $('#authLead').textContent=registerMode?t('registerLead'):t('authLead');
       $('#nameField').hidden=!registerMode;
-      $('#authSubmit').textContent=registerMode?'Зарегистрироваться':'Войти';
-      $('#authSwitch').textContent=registerMode?'У меня уже есть аккаунт':'Создать аккаунт';
+      $('#authSubmit').textContent=registerMode?t('register'):t('authTitle');
+      $('#authSwitch').textContent=registerMode?t('haveAccount'):t('createAccount');
       $('#authPassword').autocomplete=registerMode?'new-password':'current-password';
       $('#authMessage').textContent='';
     });
 
     const config=await fetch('/api/config').then(response=>response.json()).catch(()=>({configured:false}));
     if(!config.configured||!window.supabase){
-      $('#authMessage').textContent='Регистрация скоро заработает.';
+      $('#authMessage').textContent=t('comingSoon');
       return {available:false,user:null,loadSummaries:async()=>({}),myRating:async()=>null,myRatings:async()=>({}),saveRating:async()=>false,saveRatings:async()=>false,removeRating:async()=>false,openAuth,onAuth:()=>{}};
     }
     client=window.supabase.createClient(config.supabaseUrl,config.supabaseAnonKey);
@@ -107,13 +117,13 @@
       const message=$('#authMessage');const submit=$('#authSubmit');message.textContent='';submit.disabled=true;
       try{
         if(registerMode){
-          if(name.length<2)throw new Error('Укажи ник минимум из двух символов.');
+          if(name.length<2)throw new Error(t('nicknameError'));
           const {data,error}=await client.auth.signUp({email,password,options:{data:{display_name:name}}});if(error)throw error;
-          if(!data.session){message.textContent='Проверь почту и подтверди регистрацию.';}else{dialog.close();}
+          if(!data.session){message.textContent=t('checkEmail');}else{dialog.close();}
         }else{
           const {error}=await client.auth.signInWithPassword({email,password});if(error)throw error;dialog.close();
         }
-      }catch(error){message.textContent=error.message||'Не удалось выполнить вход.';}finally{submit.disabled=false;}
+      }catch(error){message.textContent=error.message||t('authError');}finally{submit.disabled=false;}
     });
 
     const api={
